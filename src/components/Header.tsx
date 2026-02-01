@@ -20,14 +20,14 @@ export const Header = () => {
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link to="/analyze" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Resume Analysis
+              Resume
             </Link>
             <Link to="/jd-analysis" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               JD Analysis
             </Link>
-            <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
+            <Link to="/interview" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Interview
+            </Link>
           </nav>
           
           {/* Actions */}
