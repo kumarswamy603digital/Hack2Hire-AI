@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useJDAnalysis } from "@/hooks/useJDAnalysis";
 import { JDAnalysisResults } from "./JDAnalysisResults";
-import { FileText, Loader2, RotateCcw, Sparkles, Briefcase } from "lucide-react";
+import { PDFJDUploader } from "./PDFJDUploader";
+import { FileText, Loader2, RotateCcw, Sparkles, Briefcase, Upload, Type } from "lucide-react";
 
 const SAMPLE_JD = `Senior Full-Stack Engineer
 
@@ -36,6 +38,7 @@ What We Offer:
 
 export const JDAnalyzer = () => {
   const [jobDescription, setJobDescription] = useState("");
+  const [inputMode, setInputMode] = useState<"pdf" | "text">("pdf");
   const { isAnalyzing, analysis, analyzeJD, reset } = useJDAnalysis();
 
   const handleAnalyze = () => {
@@ -44,11 +47,18 @@ export const JDAnalyzer = () => {
 
   const loadSample = () => {
     setJobDescription(SAMPLE_JD);
+    setInputMode("text");
   };
 
   const handleReset = () => {
     setJobDescription("");
     reset();
+  };
+
+  const handlePDFParsed = (text: string) => {
+    setJobDescription(text);
+    // Auto-analyze after parsing
+    analyzeJD(text);
   };
 
   return (
@@ -64,8 +74,8 @@ export const JDAnalyzer = () => {
             JD <span className="text-gradient">Analyzer</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Extract must-have skills, nice-to-have skills, and role level from 
-            job descriptions using AI analysis.
+            Upload a PDF or paste text to extract must-have skills, nice-to-have skills, 
+            and role level using AI analysis.
           </p>
         </div>
 
@@ -84,45 +94,67 @@ export const JDAnalyzer = () => {
                   Load Sample
                 </Button>
               </div>
-              <Textarea
-                placeholder="Paste job description here..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                className="min-h-[400px] resize-none bg-background/50"
-              />
+
+              <Tabs value={inputMode} onValueChange={(v) => setInputMode(v as "pdf" | "text")}>
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="pdf" className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Upload PDF
+                  </TabsTrigger>
+                  <TabsTrigger value="text" className="flex items-center gap-2">
+                    <Type className="w-4 h-4" />
+                    Paste Text
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pdf" className="mt-0">
+                  <PDFJDUploader onParsed={handlePDFParsed} />
+                </TabsContent>
+
+                <TabsContent value="text" className="mt-0">
+                  <Textarea
+                    placeholder="Paste job description here..."
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    className="min-h-[300px] resize-none bg-background/50"
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <Button
-                variant="hero"
-                size="lg"
-                className="flex-1"
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || !jobDescription.trim()}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-5 h-5" />
-                    Analyze JD
-                  </>
-                )}
-              </Button>
-              {(jobDescription || analysis) && (
+            {/* Actions - Only show for text mode */}
+            {inputMode === "text" && (
+              <div className="flex gap-3">
                 <Button
-                  variant="outline"
+                  variant="hero"
                   size="lg"
-                  onClick={handleReset}
+                  className="flex-1"
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing || !jobDescription.trim()}
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Analyze JD
+                    </>
+                  )}
                 </Button>
-              )}
-            </div>
+                {(jobDescription || analysis) && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleReset}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Results Section */}
@@ -135,7 +167,7 @@ export const JDAnalyzer = () => {
                   <Briefcase className="w-16 h-16 mx-auto mb-4 opacity-30" />
                   <p className="text-lg font-medium">No analysis yet</p>
                   <p className="text-sm mt-1">
-                    Paste a job description and click analyze to see results
+                    Upload a PDF or paste job description to see AI analysis
                   </p>
                 </div>
               </div>
