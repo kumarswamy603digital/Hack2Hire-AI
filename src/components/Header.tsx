@@ -28,6 +28,9 @@ export const Header = () => {
             <Link to="/interview" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Interview
             </Link>
+            <Link to="/practice" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Practice
+            </Link>
           </nav>
           
           {/* Actions */}

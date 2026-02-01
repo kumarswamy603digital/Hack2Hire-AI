@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ResumeAnalysis from "./pages/ResumeAnalysis";
 import JDAnalysis from "./pages/JDAnalysis";
 import Interview from "./pages/Interview";
+import Practice from "./pages/Practice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/analyze" element={<ResumeAnalysis />} />
           <Route path="/jd-analysis" element={<JDAnalysis />} />
           <Route path="/interview" element={<Interview />} />
+          <Route path="/practice" element={<Practice />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
