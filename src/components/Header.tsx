@@ -22,11 +22,11 @@ export const Header = () => {
             <Link to="/analyze" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Resume Analysis
             </Link>
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/jd-analysis" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              JD Analysis
+            </Link>
+            <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Features
-            </a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              How It Works
             </a>
           </nav>
           

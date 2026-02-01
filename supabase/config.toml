@@ -2,3 +2,6 @@ project_id = "taebkngjvmekjdkacvxy"
 
 [functions.analyze-resume]
 verify_jwt = false
+
+[functions.analyze-jd]
+verify_jwt = false
