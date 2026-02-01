@@ -188,6 +188,9 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    display: inline;
+    vertical-align: baseline;
+    line-height: inherit;
   }
 }
 
