@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_history: {
+        Row: {
+          assessment_type: string
+          created_at: string
+          difficulty: string | null
+          id: string
+          metadata: Json | null
+          score: number | null
+          session_id: string
+          skill_area: string | null
+          time_taken_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          assessment_type: string
+          created_at?: string
+          difficulty?: string | null
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          session_id?: string
+          skill_area?: string | null
+          time_taken_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          assessment_type?: string
+          created_at?: string
+          difficulty?: string | null
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          session_id?: string
+          skill_area?: string | null
+          time_taken_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       candidate_assessments: {
         Row: {
           assessment_type: string
@@ -44,6 +83,45 @@ export type Database = {
           id?: string
           scores?: Json
           user_id?: string
+        }
+        Relationships: []
+      }
+      industry_benchmarks: {
+        Row: {
+          average_score: number
+          id: string
+          industry: string
+          percentile_25: number
+          percentile_50: number
+          percentile_75: number
+          role_level: string
+          sample_size: number
+          skill_area: string
+          updated_at: string
+        }
+        Insert: {
+          average_score: number
+          id?: string
+          industry?: string
+          percentile_25: number
+          percentile_50: number
+          percentile_75: number
+          role_level: string
+          sample_size?: number
+          skill_area: string
+          updated_at?: string
+        }
+        Update: {
+          average_score?: number
+          id?: string
+          industry?: string
+          percentile_25?: number
+          percentile_50?: number
+          percentile_75?: number
+          role_level?: string
+          sample_size?: number
+          skill_area?: string
+          updated_at?: string
         }
         Relationships: []
       }

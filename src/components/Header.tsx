@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User, Shield, BarChart3, Users } from "lucide-react";
+import { Sparkles, LogOut, User, Shield, BarChart3, Users, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -109,6 +109,12 @@ export const Header = () => {
                     <Link to="/profile" className="cursor-pointer">
                       <User className="w-4 h-4 mr-2" />
                       Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/history" className="cursor-pointer">
+                      <History className="w-4 h-4 mr-2" />
+                      My History
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin() && (
