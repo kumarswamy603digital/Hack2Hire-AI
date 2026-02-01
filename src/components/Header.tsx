@@ -55,6 +55,9 @@ export const Header = () => {
             <Link to="/practice" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Practice
             </Link>
+            <Link to="/coding" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Coding
+            </Link>
             {isAdmin() && (
               <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                 <Shield className="w-3 h-3" />
