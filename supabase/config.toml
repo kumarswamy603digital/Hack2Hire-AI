@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.analyze-jd]
 verify_jwt = false
+
+[functions.generate-question]
+verify_jwt = false
+
+[functions.evaluate-answer]
+verify_jwt = false
