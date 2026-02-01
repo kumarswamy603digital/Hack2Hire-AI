@@ -1,5 +1,6 @@
 import { ResumeAnalysis } from "@/types/resume";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { 
   Briefcase, 
@@ -7,13 +8,41 @@ import {
   Layers, 
   Target, 
   Sparkles,
-  CheckCircle2 
+  CheckCircle2,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { exportResumeAnalysis } from "@/utils/pdfExport";
+import { toast } from "sonner";
 
 interface AnalysisResultsProps {
   analysis: ResumeAnalysis;
 }
+
+const handleExportPDF = (analysis: ResumeAnalysis) => {
+  try {
+    exportResumeAnalysis({
+      overallScore: Math.round(analysis.role_relevance * 100),
+      skills: {
+        technical: analysis.skills,
+        tools: analysis.tools_technologies,
+        soft: []
+      },
+      strengths: [analysis.summary],
+      improvements: [],
+      recommendations: [
+        `Consider focusing on ${analysis.project_complexity} complexity projects`,
+        `Your ${analysis.experience_years} years of experience align well with the role`
+      ],
+      technicalScore: Math.round(analysis.role_relevance * 100),
+      experienceScore: Math.min(100, analysis.experience_years * 12),
+      educationScore: 80
+    });
+    toast.success("PDF report downloaded successfully!");
+  } catch (error) {
+    toast.error("Failed to generate PDF");
+  }
+};
 
 export const AnalysisResults = ({ analysis }: AnalysisResultsProps) => {
   const complexityColors = {
@@ -26,6 +55,19 @@ export const AnalysisResults = ({ analysis }: AnalysisResultsProps) => {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => handleExportPDF(analysis)}
+          className="gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export PDF Report
+        </Button>
+      </div>
+
       {/* Summary Card */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-start gap-3 mb-4">

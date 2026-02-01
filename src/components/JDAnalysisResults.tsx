@@ -1,5 +1,6 @@
 import { JDAnalysis, SkillItem } from "@/types/jobDescription";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   Briefcase, 
   Code, 
@@ -7,9 +8,12 @@ import {
   Users, 
   CheckCircle2,
   Star,
-  Sparkles
+  Sparkles,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { exportJDAnalysis } from "@/utils/pdfExport";
+import { toast } from "sonner";
 
 interface JDAnalysisResultsProps {
   analysis: JDAnalysis;
@@ -40,6 +44,27 @@ const SkillBadge = ({ item }: { item: SkillItem }) => {
   );
 };
 
+const handleExportPDF = (analysis: JDAnalysis) => {
+  try {
+    exportJDAnalysis({
+      mustHave: analysis.must_have.map(s => s.skill),
+      niceToHave: analysis.nice_to_have.map(s => s.skill),
+      roleLevel: analysis.role_level,
+      industry: 'Technology',
+      responsibilities: [],
+      hiringTips: [
+        `Focus on ${analysis.must_have.length} must-have skills during screening`,
+        `Nice-to-have skills can differentiate top candidates`,
+        `Role level: ${analysis.role_level} - adjust compensation accordingly`
+      ],
+      summary: analysis.summary
+    });
+    toast.success("PDF report downloaded successfully!");
+  } catch (error) {
+    toast.error("Failed to generate PDF");
+  }
+};
+
 export const JDAnalysisResults = ({ analysis }: JDAnalysisResultsProps) => {
   const levelColors = {
     junior: "bg-success/10 text-success",
@@ -55,6 +80,19 @@ export const JDAnalysisResults = ({ analysis }: JDAnalysisResultsProps) => {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => handleExportPDF(analysis)}
+          className="gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export PDF Report
+        </Button>
+      </div>
+
       {/* Summary Card */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-start gap-3 mb-4">
