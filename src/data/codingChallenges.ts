@@ -3767,6 +3767,14 @@ console.log(maxCoins([3,1,5,8])); // Expected: 167`,
   },
 ];
 
+// Import challenges from separate files
+import { searchingChallenges } from "./challenges/searchingChallenges";
+import { sortingChallenges } from "./challenges/sortingChallenges";
+import { hashTablesChallenges } from "./challenges/hashTablesChallenges";
+import { graphsChallenges } from "./challenges/graphsChallenges";
+import { recursionChallenges } from "./challenges/recursionChallenges";
+import { mathChallenges } from "./challenges/mathChallenges";
+
 // Combine all challenges
 export const ALL_CHALLENGES: CodingChallenge[] = [
   ...arraysChallenges,
@@ -3775,6 +3783,12 @@ export const ALL_CHALLENGES: CodingChallenge[] = [
   ...stacksQueuesChallenges,
   ...treesChallenges,
   ...dpChallenges,
+  ...searchingChallenges,
+  ...sortingChallenges,
+  ...hashTablesChallenges,
+  ...graphsChallenges,
+  ...recursionChallenges,
+  ...mathChallenges,
 ];
 
 // Helper function to get challenges by category
