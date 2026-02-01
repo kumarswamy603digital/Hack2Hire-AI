@@ -10,7 +10,9 @@
 
 **Master your interviews with AI-powered mock interviews, real-time feedback, and comprehensive skill analysis.**
 
-[Live Demo](#) · [Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack)
+### 🔗 [**Live Demo → hack2hire-ai.vercel.app**](https://hack2hire-ai.vercel.app/)
+
+[Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack)
 
 </div>
 
