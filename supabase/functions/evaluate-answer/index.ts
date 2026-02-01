@@ -29,6 +29,15 @@ VERDICT THRESHOLDS:
 - overall_score >= 50: "average"  
 - overall_score < 50: "weak"
 
+DIFFICULTY PROGRESSION RULES (STRICT):
+- If overall_score >= 80: next_difficulty = current + 1 level (easy→medium, medium→hard, hard stays hard)
+- If overall_score 50-79: next_difficulty = same as current
+- If overall_score < 50: next_difficulty = current - 1 level (hard→medium, medium→easy, easy stays easy)
+
+EARLY TERMINATION:
+- Set should_continue = false if consecutive_low_scores >= 2 (scores < 40)
+- Otherwise should_continue = true
+
 PENALTY CONDITIONS:
 - Vague answer (lacks specifics): Cap accuracy at 60, depth at 40
 - Incomplete answer (missing key points): Cap depth at 50
@@ -50,7 +59,8 @@ serve(async (req) => {
       expectedSkills,
       expectedTimeSeconds,
       actualTimeSeconds,
-      difficulty
+      difficulty,
+      consecutiveLowScores = 0
     } = await req.json();
 
     if (!question || answer === undefined) {
@@ -89,6 +99,13 @@ TIME ANALYSIS:
 - Actual: ${actualTimeSeconds} seconds
 - Overtime: ${overtimeSeconds} seconds
 - Suggested time_efficiency score: ${timeEfficiencyHint}
+
+CONSECUTIVE LOW SCORES (< 40): ${consecutiveLowScores}
+- If this answer also scores < 40 and consecutiveLowScores >= 1, set should_continue = false
+
+DIFFICULTY ADJUSTMENT:
+- Current difficulty: ${difficulty}
+- Apply rules: >=80 increase, 50-79 same, <50 decrease
 
 Evaluate this answer strictly across all dimensions. Apply penalties where appropriate. Output the exact JSON structure required.`;
 
