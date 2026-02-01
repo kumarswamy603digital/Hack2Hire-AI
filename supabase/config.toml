@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.evaluate-answer]
 verify_jwt = false
+
+[functions.practice-evaluate]
+verify_jwt = false
