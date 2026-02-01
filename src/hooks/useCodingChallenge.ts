@@ -4,40 +4,55 @@ import {
   CodingChallenge, 
   CodingEvaluation, 
   SupportedLanguage,
-  SAMPLE_CHALLENGES 
 } from "@/types/coding";
+import { ALL_CHALLENGES, CategoryId, getChallengesByCategory } from "@/data/codingChallenges";
 import { toast } from "sonner";
 
 export interface CodingSessionState {
-  status: "selecting" | "coding" | "submitting" | "reviewing";
+  status: "selecting" | "category" | "coding" | "submitting" | "reviewing";
   currentChallenge: CodingChallenge | null;
+  selectedCategory: CategoryId | null;
   code: string;
   language: SupportedLanguage;
   evaluation: CodingEvaluation | null;
   startTime: number | null;
+  consoleOutput: string;
 }
 
 export function useCodingChallenge() {
   const [state, setState] = useState<CodingSessionState>({
     status: "selecting",
     currentChallenge: null,
+    selectedCategory: null,
     code: "",
     language: "javascript",
     evaluation: null,
     startTime: null,
+    consoleOutput: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [hintsRevealed, setHintsRevealed] = useState<number[]>([]);
+
+  const selectCategory = useCallback((categoryId: CategoryId) => {
+    setState(prev => ({
+      ...prev,
+      status: "category",
+      selectedCategory: categoryId,
+    }));
+  }, []);
 
   const selectChallenge = useCallback((challenge: CodingChallenge) => {
     setState({
       status: "coding",
       currentChallenge: challenge,
+      selectedCategory: challenge.category as CategoryId,
       code: challenge.starterCode.javascript,
       language: "javascript",
       evaluation: null,
       startTime: Date.now(),
+      consoleOutput: "",
     });
     setHintsRevealed([]);
   }, []);
@@ -53,6 +68,7 @@ export function useCodingChallenge() {
         ...prev,
         language,
         code: prev.currentChallenge.starterCode[language],
+        consoleOutput: "",
       };
     });
   }, []);
@@ -62,6 +78,43 @@ export function useCodingChallenge() {
       prev.includes(index) ? prev : [...prev, index]
     );
   }, []);
+
+  const runCode = useCallback(async () => {
+    if (!state.code.trim()) {
+      toast.error("Please write some code before running");
+      return null;
+    }
+
+    setIsRunning(true);
+    setState(prev => ({ ...prev, consoleOutput: "Running..." }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke<{ success: boolean; output: string; error?: string }>(
+        "run-code",
+        {
+          body: {
+            code: state.code,
+            language: state.language,
+          },
+        }
+      );
+
+      if (error || !data?.success) {
+        const errorMessage = data?.error || error?.message || "Failed to run code";
+        setState(prev => ({ ...prev, consoleOutput: `Error: ${errorMessage}` }));
+        return null;
+      }
+
+      setState(prev => ({ ...prev, consoleOutput: data.output }));
+      return data.output;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to run code";
+      setState(prev => ({ ...prev, consoleOutput: `Error: ${message}` }));
+      return null;
+    } finally {
+      setIsRunning(false);
+    }
+  }, [state.code, state.language]);
 
   const submitCode = useCallback(async () => {
     if (!state.currentChallenge || !state.code.trim()) {
@@ -133,6 +186,7 @@ export function useCodingChallenge() {
       code: prev.currentChallenge!.starterCode[prev.language],
       evaluation: null,
       startTime: Date.now(),
+      consoleOutput: "",
     }));
     setHintsRevealed([]);
   }, [state.currentChallenge]);
@@ -141,11 +195,26 @@ export function useCodingChallenge() {
     setState({
       status: "selecting",
       currentChallenge: null,
+      selectedCategory: null,
       code: "",
       language: "javascript",
       evaluation: null,
       startTime: null,
+      consoleOutput: "",
     });
+    setHintsRevealed([]);
+  }, []);
+
+  const goToCategory = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      status: "category",
+      currentChallenge: null,
+      code: "",
+      evaluation: null,
+      startTime: null,
+      consoleOutput: "",
+    }));
     setHintsRevealed([]);
   }, []);
 
@@ -154,18 +223,28 @@ export function useCodingChallenge() {
     return Math.round((Date.now() - state.startTime) / 1000);
   }, [state.startTime]);
 
+  const getCategoryChallenges = useCallback(() => {
+    if (!state.selectedCategory) return [];
+    return getChallengesByCategory(state.selectedCategory);
+  }, [state.selectedCategory]);
+
   return {
     state,
     isLoading,
+    isRunning,
     hintsRevealed,
-    challenges: SAMPLE_CHALLENGES,
+    challenges: ALL_CHALLENGES,
+    selectCategory,
     selectChallenge,
     updateCode,
     changeLanguage,
     revealHint,
+    runCode,
     submitCode,
     resetChallenge,
     goToSelection,
+    goToCategory,
     getElapsedTime,
+    getCategoryChallenges,
   };
 }
