@@ -23,12 +23,10 @@ export function useInterview() {
   
   const [isLoading, setIsLoading] = useState(false);
   const previousQuestions = useRef<string[]>([]);
-  const consecutiveLowScores = useRef<number>(0);
 
   const startInterview = useCallback(async (skills: string[], jobRequirements?: string[]) => {
     setIsLoading(true);
     previousQuestions.current = [];
-    consecutiveLowScores.current = 0;
     
     try {
       const { data, error } = await supabase.functions.invoke<InterviewQuestion & { success: boolean }>(
@@ -75,7 +73,10 @@ export function useInterview() {
     setIsLoading(true);
 
     try {
-      // Evaluate the answer with consecutive low score tracking
+      // Get last scores for average calculation
+      const lastScores = state.answers.slice(-2).map(a => a.evaluation.overall_score);
+
+      // Evaluate the answer with last scores for early termination check
       const { data: evalData, error: evalError } = await supabase.functions.invoke<AnswerEvaluation & { success: boolean }>(
         "evaluate-answer",
         {
@@ -86,20 +87,13 @@ export function useInterview() {
             expectedTimeSeconds: state.currentQuestion.expected_time_seconds,
             actualTimeSeconds: timeSpent,
             difficulty: state.currentQuestion.difficulty,
-            consecutiveLowScores: consecutiveLowScores.current,
+            lastScores,
           },
         }
       );
 
       if (evalError || !evalData?.success) {
         throw new Error(evalError?.message || "Failed to evaluate answer");
-      }
-
-      // Track consecutive low scores for early termination
-      if (evalData.overall_score < 40) {
-        consecutiveLowScores.current += 1;
-      } else {
-        consecutiveLowScores.current = 0;
       }
 
       const answerRecord: AnswerRecord = {
@@ -121,7 +115,13 @@ export function useInterview() {
           answers: newAnswers,
         }));
         
-        toast.info(evalData.should_continue ? "Interview completed!" : "Interview ended early based on performance.");
+        const message = !evalData.should_continue && evalData.termination_reason
+          ? `Interview ended: ${evalData.termination_reason}`
+          : evalData.should_continue 
+            ? "Interview completed!" 
+            : "Interview ended early based on performance.";
+        
+        toast.info(message);
         return evalData;
       }
 
@@ -164,7 +164,6 @@ export function useInterview() {
 
   const resetInterview = useCallback(() => {
     previousQuestions.current = [];
-    consecutiveLowScores.current = 0;
     setState({
       status: "setup",
       currentQuestion: null,
