@@ -25,6 +25,7 @@ export interface AnswerEvaluation {
   // Interview flow
   next_difficulty: "easy" | "medium" | "hard";
   should_continue: boolean;
+  termination_reason?: string;
   
   // Time tracking
   time_taken_seconds: number;

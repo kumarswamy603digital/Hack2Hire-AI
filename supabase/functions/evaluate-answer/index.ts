@@ -35,7 +35,8 @@ DIFFICULTY PROGRESSION RULES (STRICT):
 - If overall_score < 50: next_difficulty = current - 1 level (hard→medium, medium→easy, easy stays easy)
 
 EARLY TERMINATION:
-- Set should_continue = false if consecutive_low_scores >= 2 (scores < 40)
+- Calculate average of last 3 scores (including current)
+- If average_score_last_3 < 45: set should_continue = false and provide termination_reason
 - Otherwise should_continue = true
 
 PENALTY CONDITIONS:
@@ -60,7 +61,7 @@ serve(async (req) => {
       expectedTimeSeconds,
       actualTimeSeconds,
       difficulty,
-      consecutiveLowScores = 0
+      lastScores = []
     } = await req.json();
 
     if (!question || answer === undefined) {
@@ -100,8 +101,9 @@ TIME ANALYSIS:
 - Overtime: ${overtimeSeconds} seconds
 - Suggested time_efficiency score: ${timeEfficiencyHint}
 
-CONSECUTIVE LOW SCORES (< 40): ${consecutiveLowScores}
-- If this answer also scores < 40 and consecutiveLowScores >= 1, set should_continue = false
+LAST SCORES: ${lastScores.length > 0 ? lastScores.join(", ") : "None yet"}
+- After evaluating this answer, calculate: average of (lastScores + this_overall_score), taking at most last 3
+- If that average < 45, set should_continue = false and provide termination_reason explaining performance trend
 
 DIFFICULTY ADJUSTMENT:
 - Current difficulty: ${difficulty}
@@ -187,7 +189,11 @@ Evaluate this answer strictly across all dimensions. Apply penalties where appro
                   },
                   should_continue: {
                     type: "boolean",
-                    description: "Whether to continue the interview"
+                    description: "Whether to continue the interview (false if avg last 3 scores < 45)"
+                  },
+                  termination_reason: {
+                    type: "string",
+                    description: "Explanation for early termination if should_continue is false"
                   }
                 },
                 required: ["accuracy", "clarity", "depth", "relevance", "time_efficiency", "overall_score", "verdict", "feedback", "strengths", "improvements", "penalties_applied", "next_difficulty", "should_continue"],
