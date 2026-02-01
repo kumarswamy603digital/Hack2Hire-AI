@@ -11,6 +11,8 @@ import Interview from "./pages/Interview";
 import Practice from "./pages/Practice";
 import Coding from "./pages/Coding";
 import SkillPlan from "./pages/SkillPlan";
+import CandidateComparison from "./pages/CandidateComparison";
+import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import Unauthorized from "./pages/Unauthorized";
 import Admin from "./pages/Admin";
@@ -36,6 +38,8 @@ const App = () => (
             <Route path="/practice" element={<Practice />} />
             <Route path="/coding" element={<Coding />} />
             <Route path="/skill-plan" element={<SkillPlan />} />
+            <Route path="/comparison" element={<CandidateComparison />} />
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

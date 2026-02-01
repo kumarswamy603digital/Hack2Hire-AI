@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User, Shield } from "lucide-react";
+import { Sparkles, LogOut, User, Shield, BarChart3, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,21 @@ export const Header = () => {
             <Link to="/coding" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Coding
             </Link>
+            <Link to="/skill-plan" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Skill Plan
+            </Link>
+            {(isAdmin() || getPrimaryRole() === "recruiter") && (
+              <>
+                <Link to="/comparison" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Compare
+                </Link>
+                <Link to="/analytics" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <BarChart3 className="w-3 h-3" />
+                  Analytics
+                </Link>
+              </>
+            )}
             {isAdmin() && (
               <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                 <Shield className="w-3 h-3" />

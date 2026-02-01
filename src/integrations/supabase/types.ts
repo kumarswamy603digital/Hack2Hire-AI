@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidate_assessments: {
+        Row: {
+          assessment_type: string
+          completed_at: string
+          created_at: string
+          duration_seconds: number | null
+          feedback: string | null
+          id: string
+          scores: Json
+          user_id: string
+        }
+        Insert: {
+          assessment_type: string
+          completed_at?: string
+          created_at?: string
+          duration_seconds?: number | null
+          feedback?: string | null
+          id?: string
+          scores?: Json
+          user_id: string
+        }
+        Update: {
+          assessment_type?: string
+          completed_at?: string
+          created_at?: string
+          duration_seconds?: number | null
+          feedback?: string | null
+          id?: string
+          scores?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
