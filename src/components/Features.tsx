@@ -5,14 +5,30 @@ import {
   MessageSquare, 
   BarChart3, 
   Shield, 
-  Zap 
+  Zap,
+  Mic,
+  Camera,
+  Download,
+  History,
+  TrendingUp,
+  Lightbulb
 } from "lucide-react";
 
 const features = [
   {
+    icon: Mic,
+    title: "AI Voice Interview",
+    description: "Practice with realistic voice-based AI interviews. Hear questions and respond naturally.",
+  },
+  {
+    icon: Camera,
+    title: "Smart Proctoring",
+    description: "Webcam eye-contact & posture analysis for realistic interview simulation.",
+  },
+  {
     icon: FileText,
-    title: "Resume Analysis",
-    description: "Extract key skills, experience, and qualifications automatically with our advanced parsing engine.",
+    title: "PDF Resume Parser",
+    description: "Upload PDF resumes for instant AI-powered skill extraction and analysis.",
   },
   {
     icon: Brain,
@@ -22,17 +38,37 @@ const features = [
   {
     icon: MessageSquare,
     title: "Adaptive Questions",
-    description: "Dynamic difficulty adjustment from easy to hard based on candidate responses.",
+    description: "AI asks clarifying follow-ups based on weak answers for deeper assessment.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Industry Benchmarking",
+    description: "Compare scores against role/industry averages with percentile rankings.",
+  },
+  {
+    icon: History,
+    title: "Progress History",
+    description: "Track progress over multiple sessions and identify improvement trends.",
+  },
+  {
+    icon: Download,
+    title: "PDF Export",
+    description: "Download professional assessment reports with scores and recommendations.",
+  },
+  {
+    icon: Lightbulb,
+    title: "Coaching & Hints",
+    description: "Optional coaching mode with hints and tips during answer preparation.",
   },
   {
     icon: BarChart3,
     title: "Real-time Scoring",
-    description: "Instant evaluation metrics with detailed breakdowns and performance insights.",
+    description: "Instant evaluation metrics with detailed breakdowns and insights.",
   },
   {
     icon: Shield,
     title: "Fair Assessment",
-    description: "Bias-free evaluation criteria ensuring equal opportunity for all candidates.",
+    description: "Bias-free evaluation criteria ensuring equal opportunity for all.",
   },
   {
     icon: Zap,
@@ -61,12 +97,12 @@ export const Features = () => {
           </p>
         </div>
         
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {features.map((feature, index) => (
             <FeatureCard 
               key={feature.title} 
               {...feature} 
-              delay={100 + index * 100}
+              delay={100 + index * 50}
             />
           ))}
         </div>
