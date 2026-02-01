@@ -7,18 +7,29 @@ export interface InterviewQuestion {
 }
 
 export interface AnswerEvaluation {
-  score: number;
-  technical_accuracy: number;
-  completeness: number;
+  // Core scoring dimensions
+  accuracy: number;
   clarity: number;
+  depth: number;
+  relevance: number;
+  time_efficiency: number;
+  overall_score: number;
+  verdict: "strong" | "average" | "weak";
+  
+  // Feedback
   feedback: string;
   strengths: string[];
   improvements: string[];
+  penalties_applied: string[];
+  
+  // Interview flow
   next_difficulty: "easy" | "medium" | "hard";
   should_continue: boolean;
-  time_penalty: number;
-  actual_time_seconds: number;
+  
+  // Time tracking
+  time_taken_seconds: number;
   expected_time_seconds: number;
+  overtime_seconds: number;
 }
 
 export interface InterviewState {

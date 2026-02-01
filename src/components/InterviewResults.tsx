@@ -8,7 +8,8 @@ import {
   TrendingUp,
   CheckCircle2,
   XCircle,
-  RotateCcw
+  RotateCcw,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,13 +30,30 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
     return { grade: "F", label: "Unsatisfactory", color: "text-destructive" };
   };
 
+  const getVerdictCounts = () => {
+    const counts = { strong: 0, average: 0, weak: 0 };
+    state.answers.forEach(a => {
+      counts[a.evaluation.verdict]++;
+    });
+    return counts;
+  };
+
   const gradeInfo = getGrade(finalScore);
   const totalTime = state.answers.reduce((sum, a) => sum + a.timeSpent, 0);
-  const avgScore = finalScore;
+  const verdictCounts = getVerdictCounts();
   
   const difficultyProgression = state.answers.map(a => a.question.difficulty);
   const reachedHard = difficultyProgression.includes("hard");
   const reachedMedium = difficultyProgression.includes("medium");
+
+  // Calculate dimension averages
+  const avgDimensions = {
+    accuracy: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.accuracy, 0) / state.answers.length),
+    clarity: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.clarity, 0) / state.answers.length),
+    depth: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.depth, 0) / state.answers.length),
+    relevance: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.relevance, 0) / state.answers.length),
+    time_efficiency: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.time_efficiency, 0) / state.answers.length),
+  };
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -51,7 +69,7 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           <p className="text-muted-foreground">
             {state.status === "terminated" 
               ? "The interview was ended early based on performance." 
-              : "Here's your performance summary."}
+              : "Here's your detailed performance summary."}
           </p>
         </div>
 
@@ -64,6 +82,19 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           <div className="flex items-center justify-center gap-2">
             <span className="text-4xl font-bold text-foreground">{finalScore}</span>
             <span className="text-xl text-muted-foreground">/ 100</span>
+          </div>
+          
+          {/* Verdict Summary */}
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <Badge className="bg-success/10 text-success gap-1">
+              <CheckCircle2 className="w-3 h-3" /> {verdictCounts.strong} Strong
+            </Badge>
+            <Badge className="bg-warning/10 text-warning gap-1">
+              <AlertCircle className="w-3 h-3" /> {verdictCounts.average} Average
+            </Badge>
+            <Badge className="bg-destructive/10 text-destructive gap-1">
+              <XCircle className="w-3 h-3" /> {verdictCounts.weak} Weak
+            </Badge>
           </div>
         </div>
 
@@ -94,6 +125,29 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           </div>
         </div>
 
+        {/* Dimension Averages */}
+        <div className="glass-card rounded-2xl p-6 mb-8">
+          <h3 className="font-display font-semibold text-lg text-foreground mb-6">
+            Average Scores by Dimension
+          </h3>
+          <div className="grid sm:grid-cols-5 gap-4">
+            {Object.entries(avgDimensions).map(([key, value]) => (
+              <div key={key} className="text-center">
+                <div className={cn(
+                  "text-2xl font-bold mb-1",
+                  value >= 70 ? "text-success" : value >= 50 ? "text-warning" : "text-destructive"
+                )}>
+                  {value}
+                </div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  {key.replace("_", " ")}
+                </div>
+                <Progress value={value} className="h-1.5 mt-2" />
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Question-by-Question Breakdown */}
         <div className="glass-card rounded-2xl p-6 mb-8">
           <h3 className="font-display font-semibold text-lg text-foreground mb-6">
@@ -106,11 +160,13 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center",
-                      record.evaluation.score >= 70 ? "bg-success/20" : 
-                      record.evaluation.score >= 50 ? "bg-warning/20" : "bg-destructive/20"
+                      record.evaluation.verdict === "strong" ? "bg-success/20" : 
+                      record.evaluation.verdict === "average" ? "bg-warning/20" : "bg-destructive/20"
                     )}>
-                      {record.evaluation.score >= 70 ? (
+                      {record.evaluation.verdict === "strong" ? (
                         <CheckCircle2 className="w-4 h-4 text-success" />
+                      ) : record.evaluation.verdict === "average" ? (
+                        <AlertCircle className="w-4 h-4 text-warning" />
                       ) : (
                         <XCircle className="w-4 h-4 text-destructive" />
                       )}
@@ -123,6 +179,17 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
                         <Badge variant="outline" className="text-xs capitalize">
                           {record.question.difficulty}
                         </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "text-xs capitalize",
+                            record.evaluation.verdict === "strong" ? "border-success/30 text-success" :
+                            record.evaluation.verdict === "average" ? "border-warning/30 text-warning" :
+                            "border-destructive/30 text-destructive"
+                          )}
+                        >
+                          {record.evaluation.verdict}
+                        </Badge>
                         <span className="text-xs text-muted-foreground">
                           {record.timeSpent}s / {record.question.expected_time_seconds}s
                         </span>
@@ -131,14 +198,14 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
                   </div>
                   <div className={cn(
                     "text-2xl font-bold",
-                    record.evaluation.score >= 70 ? "text-success" : 
-                    record.evaluation.score >= 50 ? "text-warning" : "text-destructive"
+                    record.evaluation.overall_score >= 70 ? "text-success" : 
+                    record.evaluation.overall_score >= 50 ? "text-warning" : "text-destructive"
                   )}>
-                    {record.evaluation.score}
+                    {Math.round(record.evaluation.overall_score)}
                   </div>
                 </div>
                 <Progress 
-                  value={record.evaluation.score} 
+                  value={record.evaluation.overall_score} 
                   className="h-1.5"
                 />
               </div>
@@ -154,16 +221,13 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           <pre className="bg-secondary rounded-lg p-4 overflow-x-auto text-sm text-foreground">
             <code>
               {JSON.stringify({
-                final_score: finalScore,
-                grade: gradeInfo.grade,
-                questions_answered: state.answers.length,
-                status: state.status,
-                difficulty_progression: difficultyProgression,
-                scores: state.answers.map(a => ({
-                  topic: a.question.topic,
-                  difficulty: a.question.difficulty,
-                  score: a.evaluation.score
-                }))
+                accuracy: avgDimensions.accuracy,
+                clarity: avgDimensions.clarity,
+                depth: avgDimensions.depth,
+                relevance: avgDimensions.relevance,
+                time_efficiency: avgDimensions.time_efficiency,
+                overall_score: finalScore,
+                verdict: finalScore >= 70 ? "strong" : finalScore >= 50 ? "average" : "weak"
               }, null, 2)}
             </code>
           </pre>

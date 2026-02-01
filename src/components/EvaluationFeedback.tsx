@@ -3,14 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   CheckCircle2, 
-  XCircle, 
   TrendingUp, 
   TrendingDown,
   Minus,
   Clock,
   Target,
   MessageSquare,
-  Lightbulb
+  Lightbulb,
+  AlertTriangle,
+  Zap,
+  Eye,
+  Layers,
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,21 +23,60 @@ interface EvaluationFeedbackProps {
   onContinue: () => void;
 }
 
+const ScoreDimension = ({ 
+  label, 
+  value, 
+  icon: Icon 
+}: { 
+  label: string; 
+  value: number; 
+  icon: React.ComponentType<{ className?: string }>;
+}) => {
+  const getColor = (score: number) => {
+    if (score >= 70) return "text-success";
+    if (score >= 50) return "text-warning";
+    return "text-destructive";
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">{label}</span>
+        </div>
+        <span className={cn("font-semibold", getColor(value))}>{value}</span>
+      </div>
+      <Progress value={value} className="h-2" />
+    </div>
+  );
+};
+
 export const EvaluationFeedback = ({ evaluation, onContinue }: EvaluationFeedbackProps) => {
-  const getScoreColor = (score: number) => {
+  const getVerdictStyle = (verdict: string) => {
+    switch (verdict) {
+      case "strong":
+        return "bg-success/10 text-success border-success/20";
+      case "average":
+        return "bg-warning/10 text-warning border-warning/20";
+      case "weak":
+        return "bg-destructive/10 text-destructive border-destructive/20";
+      default:
+        return "";
+    }
+  };
+
+  const getOverallColor = (score: number) => {
     if (score >= 70) return "text-success";
     if (score >= 50) return "text-warning";
     return "text-destructive";
   };
 
   const getDifficultyTrend = () => {
-    const currentDifficulties = ["easy", "medium", "hard"];
-    const nextIndex = currentDifficulties.indexOf(evaluation.next_difficulty);
-    
-    if (evaluation.score >= 70) {
+    if (evaluation.overall_score >= 70) {
       return { icon: TrendingUp, text: "Difficulty increasing", color: "text-success" };
     }
-    if (evaluation.score < 50) {
+    if (evaluation.overall_score < 50) {
       return { icon: TrendingDown, text: "Difficulty stable/decreasing", color: "text-warning" };
     }
     return { icon: Minus, text: "Difficulty maintained", color: "text-muted-foreground" };
@@ -44,48 +87,59 @@ export const EvaluationFeedback = ({ evaluation, onContinue }: EvaluationFeedbac
 
   return (
     <div className="space-y-4 animate-fade-in-up">
-      {/* Score Header */}
+      {/* Score Header with Verdict */}
       <div className="glass-card rounded-2xl p-6 text-center">
-        <div className={cn("font-display font-bold text-6xl mb-2", getScoreColor(evaluation.score))}>
-          {evaluation.score}
+        <Badge 
+          variant="outline" 
+          className={cn("mb-4 text-sm font-semibold capitalize", getVerdictStyle(evaluation.verdict))}
+        >
+          {evaluation.verdict} Performance
+        </Badge>
+        <div className={cn("font-display font-bold text-6xl mb-2", getOverallColor(evaluation.overall_score))}>
+          {Math.round(evaluation.overall_score)}
         </div>
-        <p className="text-muted-foreground">Points earned</p>
+        <p className="text-muted-foreground">Overall Score</p>
         
-        {evaluation.time_penalty > 0 && (
+        {evaluation.overtime_seconds > 0 && (
           <div className="flex items-center justify-center gap-2 mt-3 text-destructive text-sm">
             <Clock className="w-4 h-4" />
-            <span>-{evaluation.time_penalty} points (time penalty)</span>
+            <span>+{evaluation.overtime_seconds}s overtime</span>
           </div>
         )}
       </div>
 
-      {/* Score Breakdown */}
+      {/* Detailed Score Breakdown */}
       <div className="glass-card rounded-xl p-5">
-        <h4 className="font-semibold text-foreground mb-4">Score Breakdown</h4>
+        <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary" />
+          Score Dimensions
+        </h4>
         <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Technical Accuracy</span>
-              <span className="font-medium">{evaluation.technical_accuracy}%</span>
-            </div>
-            <Progress value={evaluation.technical_accuracy} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Completeness</span>
-              <span className="font-medium">{evaluation.completeness}%</span>
-            </div>
-            <Progress value={evaluation.completeness} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Clarity</span>
-              <span className="font-medium">{evaluation.clarity}%</span>
-            </div>
-            <Progress value={evaluation.clarity} className="h-2" />
-          </div>
+          <ScoreDimension label="Accuracy" value={evaluation.accuracy} icon={CheckCircle2} />
+          <ScoreDimension label="Clarity" value={evaluation.clarity} icon={Eye} />
+          <ScoreDimension label="Depth" value={evaluation.depth} icon={Layers} />
+          <ScoreDimension label="Relevance" value={evaluation.relevance} icon={Search} />
+          <ScoreDimension label="Time Efficiency" value={evaluation.time_efficiency} icon={Zap} />
         </div>
       </div>
+
+      {/* Penalties Applied */}
+      {evaluation.penalties_applied && evaluation.penalties_applied.length > 0 && (
+        <div className="glass-card rounded-xl p-4 border-destructive/20">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-destructive" />
+            <h5 className="font-medium text-destructive text-sm">Penalties Applied</h5>
+          </div>
+          <ul className="space-y-1">
+            {evaluation.penalties_applied.map((penalty, i) => (
+              <li key={i} className="text-xs text-destructive/80 flex items-start gap-2">
+                <span className="mt-0.5">•</span>
+                {penalty}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Feedback */}
       <div className="glass-card rounded-xl p-5">

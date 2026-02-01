@@ -167,7 +167,7 @@ export function useInterview() {
 
   const calculateFinalScore = useCallback(() => {
     if (state.answers.length === 0) return 0;
-    const total = state.answers.reduce((sum, a) => sum + a.evaluation.score, 0);
+    const total = state.answers.reduce((sum, a) => sum + a.evaluation.overall_score, 0);
     return Math.round(total / state.answers.length);
   }, [state.answers]);
 

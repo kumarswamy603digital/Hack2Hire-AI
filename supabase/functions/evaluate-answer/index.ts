@@ -5,27 +5,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const systemPrompt = `You are a strict, objective AI interviewer evaluating candidate responses.
+const systemPrompt = `You are an unbiased interview evaluation engine. You must evaluate candidate answers with strict objectivity.
 
-EVALUATION CRITERIA:
-1. Technical accuracy (40%) - Is the answer correct?
-2. Completeness (30%) - Did they cover all key points?
-3. Clarity (20%) - Is the explanation clear and structured?
-4. Time efficiency (10%) - Did they answer within expected time?
+SCORING DIMENSIONS (0-100 each):
+1. Accuracy - Is the answer technically correct? Are facts and concepts accurate?
+2. Clarity - Is the explanation clear, well-structured, and easy to understand?
+3. Depth - Does the answer demonstrate deep understanding beyond surface level?
+4. Relevance - Does the answer directly address the question asked?
+5. Time Efficiency - Did they answer within expected time? (base 100, penalize overtime)
 
-SCORING RULES:
-- Base score on content quality (0-100)
-- Deduct 5 points for every 30 seconds over expected time
-- Incomplete answers cap at 70 max
-- Wrong answers cap at 30 max
-- Empty/refused answers get 0
+TIME PENALTY RULES:
+- Within expected time: time_efficiency = 100
+- 1-30 seconds over: time_efficiency = 85
+- 31-60 seconds over: time_efficiency = 70
+- 61-90 seconds over: time_efficiency = 50
+- 90+ seconds over: time_efficiency = 30
 
-DIFFICULTY ADJUSTMENT:
-- Score >= 70: Recommend increasing difficulty
-- Score 50-69: Maintain current difficulty
-- Score < 50: Recommend decreasing or maintaining difficulty
+OVERALL SCORE CALCULATION:
+overall_score = (accuracy * 0.30) + (clarity * 0.20) + (depth * 0.25) + (relevance * 0.15) + (time_efficiency * 0.10)
 
-Be strict but fair. Provide actionable feedback.`;
+VERDICT THRESHOLDS:
+- overall_score >= 70: "strong"
+- overall_score >= 50: "average"  
+- overall_score < 50: "weak"
+
+PENALTY CONDITIONS:
+- Vague answer (lacks specifics): Cap accuracy at 60, depth at 40
+- Incomplete answer (missing key points): Cap depth at 50
+- Off-topic answer: Cap relevance at 30
+- Empty/refused answer: All dimensions 0
+
+Be strict, objective, and decisive. No partial credit for wrong concepts.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,12 +47,13 @@ serve(async (req) => {
       question,
       answer,
       keyPoints,
+      expectedSkills,
       expectedTimeSeconds,
       actualTimeSeconds,
       difficulty
     } = await req.json();
 
-    if (!question || !answer) {
+    if (!question || answer === undefined) {
       return new Response(
         JSON.stringify({ error: "Question and answer are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -57,25 +68,31 @@ serve(async (req) => {
       );
     }
 
-    const timePenalty = actualTimeSeconds > expectedTimeSeconds 
-      ? Math.floor((actualTimeSeconds - expectedTimeSeconds) / 30) * 5
-      : 0;
+    // Calculate time penalty for context
+    const overtimeSeconds = Math.max(0, actualTimeSeconds - expectedTimeSeconds);
+    let timeEfficiencyHint = 100;
+    if (overtimeSeconds > 90) timeEfficiencyHint = 30;
+    else if (overtimeSeconds > 60) timeEfficiencyHint = 50;
+    else if (overtimeSeconds > 30) timeEfficiencyHint = 70;
+    else if (overtimeSeconds > 0) timeEfficiencyHint = 85;
 
     const context = `
 QUESTION (${difficulty} difficulty): ${question}
 
 EXPECTED KEY POINTS: ${keyPoints?.join(", ") || "Not specified"}
+${expectedSkills ? `EXPECTED SKILLS TESTED: ${expectedSkills.join(", ")}` : ""}
 
-CANDIDATE'S ANSWER: ${answer}
+CANDIDATE'S ANSWER: ${answer || "[No answer provided]"}
 
 TIME ANALYSIS:
 - Expected: ${expectedTimeSeconds} seconds
 - Actual: ${actualTimeSeconds} seconds
-- Time penalty: ${timePenalty} points
+- Overtime: ${overtimeSeconds} seconds
+- Suggested time_efficiency score: ${timeEfficiencyHint}
 
-Evaluate this answer strictly and objectively. Apply the time penalty to your final score.`;
+Evaluate this answer strictly across all dimensions. Apply penalties where appropriate. Output the exact JSON structure required.`;
 
-    console.log("Evaluating answer for question at difficulty:", difficulty);
+    console.log("Evaluating answer with detailed dimensions, difficulty:", difficulty);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -94,25 +111,38 @@ Evaluate this answer strictly and objectively. Apply the time penalty to your fi
             type: "function",
             function: {
               name: "evaluate_answer",
-              description: "Evaluate the candidate's answer and provide scoring",
+              description: "Evaluate the candidate's answer across all scoring dimensions",
               parameters: {
                 type: "object",
                 properties: {
-                  score: {
+                  accuracy: {
                     type: "number",
-                    description: "Final score from 0-100 after all penalties"
-                  },
-                  technical_accuracy: {
-                    type: "number",
-                    description: "Score for technical accuracy (0-100)"
-                  },
-                  completeness: {
-                    type: "number",
-                    description: "Score for answer completeness (0-100)"
+                    description: "Technical correctness score (0-100)"
                   },
                   clarity: {
                     type: "number",
-                    description: "Score for explanation clarity (0-100)"
+                    description: "Explanation clarity score (0-100)"
+                  },
+                  depth: {
+                    type: "number",
+                    description: "Understanding depth score (0-100)"
+                  },
+                  relevance: {
+                    type: "number",
+                    description: "Answer relevance score (0-100)"
+                  },
+                  time_efficiency: {
+                    type: "number",
+                    description: "Time management score (0-100)"
+                  },
+                  overall_score: {
+                    type: "number",
+                    description: "Weighted overall score (0-100)"
+                  },
+                  verdict: {
+                    type: "string",
+                    enum: ["strong", "average", "weak"],
+                    description: "Final verdict based on overall score"
                   },
                   feedback: {
                     type: "string",
@@ -128,6 +158,11 @@ Evaluate this answer strictly and objectively. Apply the time penalty to your fi
                     items: { type: "string" },
                     description: "Areas for improvement"
                   },
+                  penalties_applied: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "List of penalties applied (if any)"
+                  },
                   next_difficulty: {
                     type: "string",
                     enum: ["easy", "medium", "hard"],
@@ -135,10 +170,10 @@ Evaluate this answer strictly and objectively. Apply the time penalty to your fi
                   },
                   should_continue: {
                     type: "boolean",
-                    description: "Whether to continue the interview or terminate early"
+                    description: "Whether to continue the interview"
                   }
                 },
-                required: ["score", "technical_accuracy", "completeness", "clarity", "feedback", "strengths", "improvements", "next_difficulty", "should_continue"],
+                required: ["accuracy", "clarity", "depth", "relevance", "time_efficiency", "overall_score", "verdict", "feedback", "strengths", "improvements", "penalties_applied", "next_difficulty", "should_continue"],
                 additionalProperties: false
               }
             }
@@ -183,15 +218,19 @@ Evaluate this answer strictly and objectively. Apply the time penalty to your fi
     }
 
     const evaluation = JSON.parse(toolCall.function.arguments);
-    console.log("Answer evaluated, score:", evaluation.score, "next difficulty:", evaluation.next_difficulty);
+    console.log("Detailed evaluation complete:", {
+      verdict: evaluation.verdict,
+      overall: evaluation.overall_score,
+      next_difficulty: evaluation.next_difficulty
+    });
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         ...evaluation,
-        time_penalty: timePenalty,
-        actual_time_seconds: actualTimeSeconds,
-        expected_time_seconds: expectedTimeSeconds
+        time_taken_seconds: actualTimeSeconds,
+        expected_time_seconds: expectedTimeSeconds,
+        overtime_seconds: overtimeSeconds
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
