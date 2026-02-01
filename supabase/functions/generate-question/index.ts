@@ -13,6 +13,12 @@ RULES:
 3. Questions must be practical and test real knowledge
 4. Include expected time based on complexity
 5. Be specific - avoid vague or overly broad questions
+6. Categorize each question correctly
+
+CATEGORIES:
+- technical: Coding, algorithms, system design, debugging, tools, frameworks
+- conceptual: Theory, principles, best practices, architecture patterns, trade-offs
+- behavioral: Communication, teamwork, problem-solving approach, past experiences
 
 DIFFICULTY GUIDELINES:
 - easy: Basic concepts, definitions, simple syntax (60-90 seconds)
@@ -100,13 +106,18 @@ Generate a ${difficulty} level technical interview question that tests the candi
                     type: "string",
                     description: "The skill/topic being tested"
                   },
+                  category: {
+                    type: "string",
+                    enum: ["technical", "conceptual", "behavioral"],
+                    description: "Question category: technical (coding/tools), conceptual (theory/patterns), behavioral (soft skills)"
+                  },
                   key_points: {
                     type: "array",
                     items: { type: "string" },
                     description: "Key points expected in a good answer"
                   }
                 },
-                required: ["question", "difficulty", "expected_time_seconds", "topic", "key_points"],
+                required: ["question", "difficulty", "expected_time_seconds", "topic", "category", "key_points"],
                 additionalProperties: false
               }
             }

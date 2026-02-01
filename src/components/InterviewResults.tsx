@@ -1,4 +1,4 @@
-import { InterviewState } from "@/types/interview";
+import { InterviewState, FinalScoreBreakdown } from "@/types/interview";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -9,14 +9,19 @@ import {
   CheckCircle2,
   XCircle,
   RotateCcw,
-  AlertCircle
+  AlertCircle,
+  Code,
+  Lightbulb,
+  Users,
+  Timer,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface InterviewResultsProps {
   state: InterviewState;
-  finalScore: number;
+  finalScore: FinalScoreBreakdown;
   onRestart: () => void;
 }
 
@@ -38,7 +43,7 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
     return counts;
   };
 
-  const gradeInfo = getGrade(finalScore);
+  const gradeInfo = getGrade(finalScore.weighted);
   const totalTime = state.answers.reduce((sum, a) => sum + a.timeSpent, 0);
   const verdictCounts = getVerdictCounts();
   
@@ -46,14 +51,14 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
   const reachedHard = difficultyProgression.includes("hard");
   const reachedMedium = difficultyProgression.includes("medium");
 
-  // Calculate dimension averages
-  const avgDimensions = {
-    accuracy: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.accuracy, 0) / state.answers.length),
-    clarity: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.clarity, 0) / state.answers.length),
-    depth: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.depth, 0) / state.answers.length),
-    relevance: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.relevance, 0) / state.answers.length),
-    time_efficiency: Math.round(state.answers.reduce((sum, a) => sum + a.evaluation.time_efficiency, 0) / state.answers.length),
-  };
+  // Score breakdown for display
+  const scoreBreakdown = [
+    { key: "technical", label: "Technical", value: finalScore.technical, weight: "35%", icon: Code },
+    { key: "conceptual", label: "Conceptual", value: finalScore.conceptual, weight: "25%", icon: Lightbulb },
+    { key: "behavioral", label: "Behavioral", value: finalScore.behavioral, weight: "20%", icon: Users },
+    { key: "timeManagement", label: "Time Mgmt", value: finalScore.timeManagement, weight: "10%", icon: Timer },
+    { key: "adaptability", label: "Adaptability", value: finalScore.adaptability, weight: "10%", icon: Zap },
+  ];
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -80,7 +85,7 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           </div>
           <p className="text-xl text-muted-foreground mb-4">{gradeInfo.label}</p>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-4xl font-bold text-foreground">{finalScore}</span>
+            <span className="text-4xl font-bold text-foreground">{finalScore.weighted}</span>
             <span className="text-xl text-muted-foreground">/ 100</span>
           </div>
           
@@ -125,22 +130,29 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           </div>
         </div>
 
-        {/* Dimension Averages */}
+        {/* Weighted Score Breakdown */}
         <div className="glass-card rounded-2xl p-6 mb-8">
-          <h3 className="font-display font-semibold text-lg text-foreground mb-6">
-            Average Scores by Dimension
+          <h3 className="font-display font-semibold text-lg text-foreground mb-2">
+            Weighted Score Breakdown
           </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Final Score = 0.35×Technical + 0.25×Conceptual + 0.20×Behavioral + 0.10×Time Mgmt + 0.10×Adaptability
+          </p>
           <div className="grid sm:grid-cols-5 gap-4">
-            {Object.entries(avgDimensions).map(([key, value]) => (
+            {scoreBreakdown.map(({ key, label, value, weight, icon: Icon }) => (
               <div key={key} className="text-center">
+                <Icon className="w-5 h-5 text-primary mx-auto mb-2" />
                 <div className={cn(
                   "text-2xl font-bold mb-1",
                   value >= 70 ? "text-success" : value >= 50 ? "text-warning" : "text-destructive"
                 )}>
                   {value}
                 </div>
-                <div className="text-xs text-muted-foreground capitalize">
-                  {key.replace("_", " ")}
+                <div className="text-xs text-muted-foreground">
+                  {label}
+                </div>
+                <div className="text-xs text-muted-foreground/60">
+                  ({weight})
                 </div>
                 <Progress value={value} className="h-1.5 mt-2" />
               </div>
@@ -221,13 +233,14 @@ export const InterviewResults = ({ state, finalScore, onRestart }: InterviewResu
           <pre className="bg-secondary rounded-lg p-4 overflow-x-auto text-sm text-foreground">
             <code>
               {JSON.stringify({
-                accuracy: avgDimensions.accuracy,
-                clarity: avgDimensions.clarity,
-                depth: avgDimensions.depth,
-                relevance: avgDimensions.relevance,
-                time_efficiency: avgDimensions.time_efficiency,
-                overall_score: finalScore,
-                verdict: finalScore >= 70 ? "strong" : finalScore >= 50 ? "average" : "weak"
+                technical: finalScore.technical,
+                conceptual: finalScore.conceptual,
+                behavioral: finalScore.behavioral,
+                time_management: finalScore.timeManagement,
+                adaptability: finalScore.adaptability,
+                overall_score: finalScore.weighted,
+                verdict: finalScore.weighted >= 70 ? "strong" : finalScore.weighted >= 50 ? "average" : "weak",
+                formula: "0.35*Technical + 0.25*Conceptual + 0.20*Behavioral + 0.10*TimeMgmt + 0.10*Adaptability"
               }, null, 2)}
             </code>
           </pre>

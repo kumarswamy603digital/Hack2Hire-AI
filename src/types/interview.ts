@@ -1,9 +1,21 @@
+export type QuestionCategory = "technical" | "conceptual" | "behavioral";
+
 export interface InterviewQuestion {
   question: string;
   difficulty: "easy" | "medium" | "hard";
   expected_time_seconds: number;
   topic: string;
+  category: QuestionCategory;
   key_points: string[];
+}
+
+export interface FinalScoreBreakdown {
+  technical: number;
+  conceptual: number;
+  behavioral: number;
+  timeManagement: number;
+  adaptability: number;
+  weighted: number;
 }
 
 export interface AnswerEvaluation {

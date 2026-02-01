@@ -4,7 +4,9 @@ import {
   InterviewQuestion, 
   AnswerEvaluation, 
   InterviewState, 
-  AnswerRecord 
+  AnswerRecord,
+  FinalScoreBreakdown,
+  QuestionCategory
 } from "@/types/interview";
 import { toast } from "sonner";
 
@@ -175,10 +177,66 @@ export function useInterview() {
     });
   }, []);
 
-  const calculateFinalScore = useCallback(() => {
-    if (state.answers.length === 0) return 0;
-    const total = state.answers.reduce((sum, a) => sum + a.evaluation.overall_score, 0);
-    return Math.round(total / state.answers.length);
+  const calculateFinalScore = useCallback((): FinalScoreBreakdown => {
+    if (state.answers.length === 0) {
+      return { technical: 0, conceptual: 0, behavioral: 0, timeManagement: 0, adaptability: 0, weighted: 0 };
+    }
+
+    // Group scores by category
+    const categoryScores: Record<QuestionCategory, number[]> = {
+      technical: [],
+      conceptual: [],
+      behavioral: [],
+    };
+
+    let totalTimeEfficiency = 0;
+    const difficultyProgression: string[] = [];
+
+    state.answers.forEach((a) => {
+      const category = a.question.category || "technical"; // fallback for old data
+      categoryScores[category].push(a.evaluation.overall_score);
+      totalTimeEfficiency += a.evaluation.time_efficiency;
+      difficultyProgression.push(a.question.difficulty);
+    });
+
+    // Calculate average for each category (0 if no questions in category)
+    const technical = categoryScores.technical.length > 0 
+      ? categoryScores.technical.reduce((a, b) => a + b, 0) / categoryScores.technical.length 
+      : 0;
+    const conceptual = categoryScores.conceptual.length > 0 
+      ? categoryScores.conceptual.reduce((a, b) => a + b, 0) / categoryScores.conceptual.length 
+      : 0;
+    const behavioral = categoryScores.behavioral.length > 0 
+      ? categoryScores.behavioral.reduce((a, b) => a + b, 0) / categoryScores.behavioral.length 
+      : 0;
+
+    // Time Management = average time_efficiency across all answers
+    const timeManagement = totalTimeEfficiency / state.answers.length;
+
+    // Adaptability = how well they handled difficulty changes
+    // Score based on reaching higher difficulties and maintaining performance
+    let adaptability = 50; // base score
+    const maxDifficulty = difficultyProgression.includes("hard") ? 100 : difficultyProgression.includes("medium") ? 70 : 40;
+    const avgScore = state.answers.reduce((sum, a) => sum + a.evaluation.overall_score, 0) / state.answers.length;
+    adaptability = (maxDifficulty * 0.5) + (avgScore * 0.5);
+
+    // Weighted final score
+    const weighted = Math.round(
+      (technical * 0.35) +
+      (conceptual * 0.25) +
+      (behavioral * 0.20) +
+      (timeManagement * 0.10) +
+      (adaptability * 0.10)
+    );
+
+    return {
+      technical: Math.round(technical),
+      conceptual: Math.round(conceptual),
+      behavioral: Math.round(behavioral),
+      timeManagement: Math.round(timeManagement),
+      adaptability: Math.round(adaptability),
+      weighted,
+    };
   }, [state.answers]);
 
   return {
