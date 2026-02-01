@@ -29,14 +29,14 @@ export const Hero = () => {
           </div>
           
           {/* Main headline */}
-          <h1 className="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-foreground leading-tight mb-6 opacity-0 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-            Ace Your Next Interview with{" "}
-            <span className="text-gradient">AI-Powered</span>{" "}
-            Practice
+          <h1 className="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-foreground leading-[1.1] mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
+            <span className="block">Ace Your Next Interview with</span>
+            <span className="inline-block bg-gradient-to-r from-[hsl(195,100%,45%)] via-[hsl(175,100%,42%)] to-[hsl(165,100%,40%)] bg-clip-text text-transparent">AI-Powered</span>{" "}
+            <span>Practice</span>
           </h1>
           
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 opacity-0 animate-fade-in-up" style={{ animationDelay: "500ms" }}>
+          <p className="text-lg md:text-xl text-muted-foreground/90 max-w-2xl mx-auto mb-10 leading-relaxed opacity-0 animate-fade-in-up" style={{ animationDelay: "500ms" }}>
             Practice with AI-driven mock interviews, get real-time feedback, 
             and land your dream job. From resume analysis to voice interviews—we've got you covered.
           </p>
