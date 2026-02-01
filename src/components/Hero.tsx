@@ -72,30 +72,6 @@ export const Hero = () => {
               <div className="text-sm text-muted-foreground mt-1">Time Saved</div>
             </div>
           </div>
-
-          {/* Demo Video Section */}
-          <div className="mt-20 opacity-0 animate-fade-in-up" style={{ animationDelay: "1100ms" }}>
-            <h2 className="font-display font-bold text-2xl md:text-3xl text-foreground mb-6">
-              See Hack2Hire AI in Action
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <div className="relative aspect-video rounded-xl overflow-hidden border border-border/50 bg-card/50 backdrop-blur-sm shadow-2xl">
-                {/* Replace the VIDEO_ID below with your YouTube/Loom video ID */}
-                {/* YouTube: https://www.youtube.com/embed/VIDEO_ID */}
-                {/* Loom: https://www.loom.com/embed/VIDEO_ID */}
-                <iframe
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                  title="Hack2Hire AI Demo"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                Watch our quick demo to see how Hack2Hire AI can transform your interview preparation
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
