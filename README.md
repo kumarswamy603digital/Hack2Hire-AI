@@ -1,14 +1,14 @@
-# InterviewAI - AI-Powered Interview Practice Platform
+# Hack2Hire AI - AI-Powered Mock Interview Platform
 
 <div align="center">
 
-![InterviewAI](https://img.shields.io/badge/InterviewAI-Smart%20Hiring-6366f1?style=for-the-badge)
+![Hack2Hire AI](https://img.shields.io/badge/Hack2Hire%20AI-Mock%20Interviews-00CED1?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwindcss)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=flat-square&logo=supabase)
 
-**An intelligent interview preparation platform with AI-powered voice interviews, resume analysis, and real-time feedback.**
+**Master your interviews with AI-powered mock interviews, real-time feedback, and comprehensive skill analysis.**
 
 [Live Demo](#) · [Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack)
 
@@ -18,13 +18,13 @@
 
 ## 📋 Overview
 
-InterviewAI is a comprehensive AI-powered interview practice platform designed to help candidates prepare for job interviews and enable recruiters to assess talent efficiently. The platform leverages cutting-edge AI technology including voice recognition, natural language processing, and real-time proctoring to deliver a realistic interview experience.
+Hack2Hire AI is a comprehensive AI-powered mock interview platform designed to help candidates ace their job interviews. The platform leverages cutting-edge AI technology including voice recognition, natural language processing, and real-time proctoring to deliver a realistic interview experience that prepares you for success.
 
 ## ✨ Features
 
 ### 🎙️ AI Voice Interview
 - **Real-time voice interaction** - Practice with realistic AI-powered voice interviews
-- **Speech-to-Text** - Powered by ElevenLabs for accurate transcription
+- **Speech-to-Text** - Powered by ElevenLabs for accurate transcription with browser fallback
 - **Text-to-Speech** - Natural AI voice responses for immersive experience
 - **Adaptive questioning** - AI generates follow-up questions based on your answers
 
@@ -87,6 +87,7 @@ InterviewAI is a comprehensive AI-powered interview practice platform designed t
 ### AI & APIs
 - **ElevenLabs** - Voice synthesis (TTS) & transcription (STT)
 - **OpenAI/Gemini** - AI question generation & evaluation
+- **Web Speech API** - Browser-based STT fallback
 - **PDF.js** - PDF parsing and extraction
 
 ## 🚀 Getting Started
@@ -114,14 +115,14 @@ InterviewAI is a comprehensive AI-powered interview practice platform designed t
 
 3. **Set up environment variables**
    
-   The project uses Lovable Cloud (Supabase) for backend services. The following variables are auto-configured:
+   The project uses cloud backend services. The following variables are auto-configured:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
    - `VITE_SUPABASE_PROJECT_ID`
 
 4. **Configure API Keys**
    
-   For voice interview features, add your ElevenLabs API key via the Lovable secrets manager:
+   For voice interview features, add your ElevenLabs API key via the secrets manager:
    - `ELEVENLABS_API_KEY` - Required for TTS and STT
 
 5. **Start the development server**
@@ -139,6 +140,8 @@ InterviewAI is a comprehensive AI-powered interview practice platform designed t
 
 ```
 ├── src/
+│   ├── assets/              # Brand assets
+│   │   └── hack2hire-logo.png
 │   ├── components/          # React components
 │   │   ├── ui/              # Shadcn UI components
 │   │   ├── Header.tsx       # Navigation header
@@ -181,6 +184,7 @@ InterviewAI is a comprehensive AI-powered interview practice platform designed t
 │   │   └── ...
 │   └── config.toml          # Supabase configuration
 ├── public/                  # Static assets
+│   └── favicon.png          # Hack2Hire AI favicon
 └── package.json
 ```
 
@@ -248,7 +252,6 @@ This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- [Lovable](https://lovable.dev) - AI-powered development platform
 - [Shadcn/UI](https://ui.shadcn.com) - Beautiful component library
 - [ElevenLabs](https://elevenlabs.io) - Voice AI technology
 - [Supabase](https://supabase.com) - Backend infrastructure
@@ -257,6 +260,6 @@ This project is licensed under the MIT License.
 
 <div align="center">
 
-**Built with ❤️ using [Lovable](https://lovable.dev)**
+**Hack2Hire AI - Ace Your Next Interview** 🚀
 
 </div>
