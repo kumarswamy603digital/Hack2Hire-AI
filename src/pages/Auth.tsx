@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Loader2, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+import hack2hireLogo from "@/assets/hack2hire-logo.png";
 
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
@@ -105,12 +106,11 @@ export default function Auth() {
 
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-lg gradient-hero flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display font-bold text-2xl text-foreground">
-            AssessAI
-          </span>
+          <img 
+            src={hack2hireLogo} 
+            alt="Hack2Hire AI" 
+            className="h-12 w-auto object-contain"
+          />
         </div>
 
         {/* Auth Card */}

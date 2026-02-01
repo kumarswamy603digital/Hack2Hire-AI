@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User, Shield, BarChart3, Users, History, Mic } from "lucide-react";
+import { LogOut, User, Shield, BarChart3, Users, History, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import hack2hireLogo from "@/assets/hack2hire-logo.png";
 
 export const Header = () => {
   const { isAuthenticated, isLoading, profile, signOut, getPrimaryRole, isAdmin } = useAuthContext();
@@ -33,12 +34,11 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-xl text-foreground">
-              AssessAI
-            </span>
+            <img 
+              src={hack2hireLogo} 
+              alt="Hack2Hire AI" 
+              className="h-10 w-auto object-contain"
+            />
           </Link>
           
           {/* Navigation */}
