@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useCodingChallenge } from "@/hooks/useCodingChallenge";
 import { CodingChallenge, SupportedLanguage } from "@/types/coding";
+import { CHALLENGE_CATEGORIES, getCategoryStats, CategoryId } from "@/data/codingChallenges";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +28,9 @@ import {
   Zap,
   Eye,
   EyeOff,
+  Terminal,
+  Send,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,16 +38,20 @@ export const CodingSandbox = () => {
   const {
     state,
     isLoading,
+    isRunning,
     hintsRevealed,
-    challenges,
+    selectCategory,
     selectChallenge,
     updateCode,
     changeLanguage,
     revealHint,
+    runCode,
     submitCode,
     resetChallenge,
     goToSelection,
+    goToCategory,
     getElapsedTime,
+    getCategoryChallenges,
   } = useCodingChallenge();
 
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -81,11 +89,11 @@ export const CodingSandbox = () => {
     }
   };
 
-  // Challenge Selection Screen
+  // Category Selection Screen
   if (state.status === "selecting") {
     return (
       <div className="min-h-screen bg-background py-12">
-        <div className="container px-4 md:px-6 max-w-4xl mx-auto">
+        <div className="container px-4 md:px-6 max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
               <Code2 className="w-4 h-4" />
@@ -94,42 +102,108 @@ export const CodingSandbox = () => {
             <h1 className="font-display font-bold text-3xl md:text-4xl lg:text-5xl text-foreground mb-4">
               Coding <span className="text-gradient">Challenges</span>
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Solve real coding problems with our Monaco-powered editor. Your code is analyzed by AI.
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Master data structures and algorithms with 80+ coding challenges. Choose a category to start practicing.
             </p>
           </div>
 
-          <div className="grid gap-4">
-            {challenges.map((challenge) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {CHALLENGE_CATEGORIES.map((category) => {
+              const stats = getCategoryStats(category.id);
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => selectCategory(category.id)}
+                  className="glass-card rounded-xl p-6 text-left hover:border-primary/50 transition-all group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-4xl">{category.icon}</div>
+                    <div className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-sm font-medium">View</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors mb-1">
+                    {category.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {category.description}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="px-2 py-1 rounded bg-success/10 text-success font-medium">
+                      {stats.easy} Easy
+                    </span>
+                    <span className="px-2 py-1 rounded bg-warning/10 text-warning font-medium">
+                      {stats.medium} Medium
+                    </span>
+                    <span className="px-2 py-1 rounded bg-destructive/10 text-destructive font-medium">
+                      {stats.hard} Hard
+                    </span>
+                  </div>
+                  <div className="mt-3 text-xs text-muted-foreground">
+                    {stats.total} challenges • {stats.totalPoints} points
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Challenge List in Category
+  if (state.status === "category") {
+    const challenges = getCategoryChallenges();
+    const category = CHALLENGE_CATEGORIES.find(c => c.id === state.selectedCategory);
+
+    return (
+      <div className="min-h-screen bg-background py-12">
+        <div className="container px-4 md:px-6 max-w-4xl mx-auto">
+          <Button variant="ghost" onClick={goToSelection} className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Categories
+          </Button>
+
+          <div className="text-center mb-8">
+            <div className="text-5xl mb-4">{category?.icon}</div>
+            <h1 className="font-display font-bold text-3xl text-foreground mb-2">
+              {category?.name}
+            </h1>
+            <p className="text-muted-foreground">{category?.description}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {challenges.length} challenges available
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            {challenges.map((challenge, index) => (
               <button
                 key={challenge.id}
                 onClick={() => selectChallenge(challenge)}
-                className="glass-card rounded-xl p-6 text-left hover:border-primary/50 transition-all group"
+                className="glass-card rounded-xl p-4 text-left hover:border-primary/50 transition-all group flex items-center gap-4"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
-                      {challenge.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className={cn("capitalize", getDifficultyColor(challenge.difficulty))}>
-                        {challenge.difficulty}
-                      </Badge>
-                      <Badge variant="outline">{challenge.category}</Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {challenge.expectedTimeMinutes} min
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-primary">
-                    <Trophy className="w-4 h-4" />
-                    <span className="font-bold">{challenge.points}</span>
+                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-sm font-bold text-muted-foreground">
+                  {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                    {challenge.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className={cn("capitalize text-xs", getDifficultyColor(challenge.difficulty))}>
+                      {challenge.difficulty}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {challenge.expectedTimeMinutes} min
+                    </span>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {challenge.description.split("\n")[0]}
-                </p>
+                <div className="flex items-center gap-1 text-primary">
+                  <Trophy className="w-4 h-4" />
+                  <span className="font-bold">{challenge.points}</span>
+                </div>
               </button>
             ))}
           </div>
@@ -253,9 +327,9 @@ export const CodingSandbox = () => {
 
           {/* Actions */}
           <div className="flex gap-4">
-            <Button variant="outline" size="lg" className="flex-1" onClick={goToSelection}>
+            <Button variant="outline" size="lg" className="flex-1" onClick={goToCategory}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Challenges
+              More Challenges
             </Button>
             <Button variant="hero" size="lg" className="flex-1" onClick={resetChallenge}>
               <RotateCcw className="w-4 h-4 mr-2" />
@@ -278,7 +352,7 @@ export const CodingSandbox = () => {
       <div className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="container px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={goToSelection}>
+            <Button variant="ghost" size="sm" onClick={goToCategory}>
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
@@ -323,6 +397,25 @@ export const CodingSandbox = () => {
             </Button>
 
             <Button
+              variant="outline"
+              size="sm"
+              onClick={runCode}
+              disabled={isRunning}
+            >
+              {isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Running...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  Run
+                </>
+              )}
+            </Button>
+
+            <Button
               variant="hero"
               size="sm"
               onClick={submitCode}
@@ -335,7 +428,7 @@ export const CodingSandbox = () => {
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4" />
+                  <Send className="w-4 h-4" />
                   Submit
                 </>
               )}
@@ -410,24 +503,37 @@ export const CodingSandbox = () => {
           </div>
         </div>
 
-        {/* Code Editor */}
+        {/* Code Editor + Console */}
         <div className="w-1/2 flex flex-col">
-          <Editor
-            height="100%"
-            language={state.language === "python" ? "python" : state.language}
-            theme="vs-dark"
-            value={state.code}
-            onChange={(value) => updateCode(value || "")}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: "on",
-              roundedSelection: false,
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              padding: { top: 16 },
-            }}
-          />
+          <div className="flex-1">
+            <Editor
+              height="100%"
+              language={state.language === "python" ? "python" : state.language}
+              theme="vs-dark"
+              value={state.code}
+              onChange={(value) => updateCode(value || "")}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                padding: { top: 16 },
+              }}
+            />
+          </div>
+
+          {/* Console Output */}
+          <div className="h-40 border-t border-border bg-[#1e1e1e] overflow-auto">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-border/50 bg-[#252526]">
+              <Terminal className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">Console Output</span>
+            </div>
+            <pre className="p-4 text-sm font-mono text-green-400 whitespace-pre-wrap">
+              {state.consoleOutput || "Click 'Run' to see output here..."}
+            </pre>
+          </div>
         </div>
       </div>
     </div>
