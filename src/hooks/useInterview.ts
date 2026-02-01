@@ -23,10 +23,12 @@ export function useInterview() {
   
   const [isLoading, setIsLoading] = useState(false);
   const previousQuestions = useRef<string[]>([]);
+  const consecutiveLowScores = useRef<number>(0);
 
   const startInterview = useCallback(async (skills: string[], jobRequirements?: string[]) => {
     setIsLoading(true);
     previousQuestions.current = [];
+    consecutiveLowScores.current = 0;
     
     try {
       const { data, error } = await supabase.functions.invoke<InterviewQuestion & { success: boolean }>(
@@ -73,7 +75,7 @@ export function useInterview() {
     setIsLoading(true);
 
     try {
-      // Evaluate the answer
+      // Evaluate the answer with consecutive low score tracking
       const { data: evalData, error: evalError } = await supabase.functions.invoke<AnswerEvaluation & { success: boolean }>(
         "evaluate-answer",
         {
@@ -84,12 +86,20 @@ export function useInterview() {
             expectedTimeSeconds: state.currentQuestion.expected_time_seconds,
             actualTimeSeconds: timeSpent,
             difficulty: state.currentQuestion.difficulty,
+            consecutiveLowScores: consecutiveLowScores.current,
           },
         }
       );
 
       if (evalError || !evalData?.success) {
         throw new Error(evalError?.message || "Failed to evaluate answer");
+      }
+
+      // Track consecutive low scores for early termination
+      if (evalData.overall_score < 40) {
+        consecutiveLowScores.current += 1;
+      } else {
+        consecutiveLowScores.current = 0;
       }
 
       const answerRecord: AnswerRecord = {
@@ -154,6 +164,7 @@ export function useInterview() {
 
   const resetInterview = useCallback(() => {
     previousQuestions.current = [];
+    consecutiveLowScores.current = 0;
     setState({
       status: "setup",
       currentQuestion: null,
