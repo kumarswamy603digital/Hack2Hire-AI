@@ -12,6 +12,8 @@
 
 ### 🔗 [**Live Demo → hack2hire-ai.vercel.app**](https://hack2hire-ai.vercel.app/)
 
+### 🎬 [**Watch Video Demo →**](https://drive.google.com/file/d/1LJOLlB4cs5vvz4mcPcuru0_yHqDsqGgj/view?usp=sharing)
+
 [Features](#-features) · [Getting Started](#-getting-started) · [Tech Stack](#-tech-stack)
 
 </div>
