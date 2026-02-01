@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { AssessmentFlow } from "@/components/AssessmentFlow";
 import { Features } from "@/components/Features";
 import { Footer } from "@/components/Footer";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
         <Features />
       </main>
       <Footer />
+      <OnboardingTour />
     </div>
   );
 };
