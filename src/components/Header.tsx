@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User, Shield, BarChart3, Users, History } from "lucide-react";
+import { Sparkles, LogOut, User, Shield, BarChart3, Users, History, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +54,10 @@ export const Header = () => {
             </Link>
             <Link to="/practice" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Practice
+            </Link>
+            <Link to="/voice-interview" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <Mic className="w-3 h-3" />
+              Voice
             </Link>
             <Link to="/coding" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Coding

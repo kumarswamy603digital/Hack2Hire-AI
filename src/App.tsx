@@ -18,6 +18,7 @@ import Unauthorized from "./pages/Unauthorized";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
+import VoiceInterview from "./pages/VoiceInterview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/history" element={<History />} />
+            <Route path="/voice-interview" element={<VoiceInterview />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
