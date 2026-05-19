@@ -37,6 +37,40 @@ export function useVoiceInterview(options: UseVoiceInterviewOptions = {}) {
     if (!text) return;
 
     setIsSpeaking(true);
+
+    const browserSpeak = (): Promise<void> =>
+      new Promise((resolve) => {
+        if (typeof window === "undefined" || !window.speechSynthesis) {
+          setIsSpeaking(false);
+          resolve();
+          return;
+        }
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = 1;
+          utter.pitch = 1;
+          utter.lang = "en-US";
+          const voices = window.speechSynthesis.getVoices();
+          const preferred =
+            voices.find((v) => /female|samantha|google us english/i.test(v.name)) ||
+            voices.find((v) => v.lang?.startsWith("en"));
+          if (preferred) utter.voice = preferred;
+          utter.onend = () => {
+            setIsSpeaking(false);
+            resolve();
+          };
+          utter.onerror = () => {
+            setIsSpeaking(false);
+            resolve();
+          };
+          window.speechSynthesis.speak(utter);
+        } catch {
+          setIsSpeaking(false);
+          resolve();
+        }
+      });
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-tts`,
@@ -52,11 +86,15 @@ export function useVoiceInterview(options: UseVoiceInterviewOptions = {}) {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `TTS failed: ${response.status}`);
+        console.warn("ElevenLabs TTS unavailable, falling back to browser voice");
+        return browserSpeak();
       }
 
       const audioBlob = await response.blob();
+      if (!audioBlob.type.startsWith("audio")) {
+        console.warn("TTS returned non-audio, falling back to browser voice");
+        return browserSpeak();
+      }
       const audioUrl = URL.createObjectURL(audioBlob);
 
       return new Promise((resolve, reject) => {
@@ -71,25 +109,26 @@ export function useVoiceInterview(options: UseVoiceInterviewOptions = {}) {
 
         audio.onerror = () => {
           URL.revokeObjectURL(audioUrl);
-          setIsSpeaking(false);
-          reject(new Error("Audio playback failed"));
+          browserSpeak().then(resolve);
         };
 
-        audio.play().catch(reject);
+        audio.play().catch(() => browserSpeak().then(resolve));
       });
     } catch (error) {
-      setIsSpeaking(false);
-      console.error("TTS error:", error);
-      throw error;
+      console.error("TTS error, falling back to browser voice:", error);
+      return browserSpeak();
     }
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
-      setIsSpeaking(false);
     }
+    setIsSpeaking(false);
   }, []);
 
   /* ------------------------------------------------------------------ */
