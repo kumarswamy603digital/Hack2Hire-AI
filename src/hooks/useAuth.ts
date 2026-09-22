@@ -139,18 +139,27 @@ export function useAuth() {
       });
 
       if (error) {
-        if (error.message.includes("already registered")) {
+        if (error.message.includes("already registered") || error.message.includes("already been registered")) {
           toast.error("This email is already registered. Please sign in.");
+        } else if (error.message.includes("Failed to fetch") || error.message.includes("Load failed")) {
+          toast.error("Couldn't reach the server. Please check your connection and try again in a moment.");
         } else {
           toast.error(error.message);
         }
         return { error };
       }
 
-      toast.success("Account created! Please check your email to confirm.");
+      if (data.session) {
+        toast.success("Account created! You're signed in.");
+      } else {
+        toast.success("Account created! Please check your email to confirm.");
+      }
       return { data, error: null };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign up failed";
+      const raw = err instanceof Error ? err.message : "Sign up failed";
+      const message = raw.includes("Failed to fetch") || raw.includes("Load failed")
+        ? "Couldn't reach the server. Please check your connection and try again in a moment."
+        : raw;
       toast.error(message);
       return { error: { message } };
     }
