@@ -139,18 +139,27 @@ export function useAuth() {
       });
 
       if (error) {
-        if (error.message.includes("already registered")) {
+        if (error.message.includes("already registered") || error.message.includes("already been registered")) {
           toast.error("This email is already registered. Please sign in.");
+        } else if (error.message.includes("Failed to fetch") || error.message.includes("Load failed")) {
+          toast.error("Couldn't reach the server. Please check your connection and try again in a moment.");
         } else {
           toast.error(error.message);
         }
         return { error };
       }
 
-      toast.success("Account created! Please check your email to confirm.");
+      if (data.session) {
+        toast.success("Account created! You're signed in.");
+      } else {
+        toast.success("Account created! Please check your email to confirm.");
+      }
       return { data, error: null };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign up failed";
+      const raw = err instanceof Error ? err.message : "Sign up failed";
+      const message = raw.includes("Failed to fetch") || raw.includes("Load failed")
+        ? "Couldn't reach the server. Please check your connection and try again in a moment."
+        : raw;
       toast.error(message);
       return { error: { message } };
     }
@@ -165,14 +174,23 @@ export function useAuth() {
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes("Failed to fetch") || error.message.includes("Load failed")) {
+          toast.error("Couldn't reach the server. Please check your connection and try again in a moment.");
+        } else if (error.message.includes("Invalid login credentials")) {
+          toast.error("Wrong email or password, or you don't have an account yet. Try signing up.");
+        } else {
+          toast.error(error.message);
+        }
         return { error };
       }
 
       toast.success("Welcome back!");
       return { data, error: null };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign in failed";
+      const raw = err instanceof Error ? err.message : "Sign in failed";
+      const message = raw.includes("Failed to fetch") || raw.includes("Load failed")
+        ? "Couldn't reach the server. Please check your connection and try again in a moment."
+        : raw;
       toast.error(message);
       return { error: { message } };
     }
